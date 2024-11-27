@@ -46,8 +46,9 @@ Your environment file contains the configuration for the `job_submit` building b
 
 The [custom_jcl_replacing_loop.jcl.j2](templates/custom_jcl_replacing_loop.jcl.j2) template outlines how to generate a job for each artifact that is matching the selection criteria.
 
-Here is a sample activity configuration as a sample for your deployment method. The `loop_query` selects the current_plan_step_artifacts and pass the list to `single_variable`.  Based on the loop condition, this step will be invoked x-times:
+It leverages the [conditional keyword loop](https://www.ibm.com/docs/en/developer-for-zos/17.0?topic=reference-syntax-conditional-deployment#wd_conditional_depl__title__3) that got introduced with Wazi Deploy 3.0.3
 
+Here is a sample activity configuration as a sample for your deployment method. The `loop_query` selects the current_plan_step_artifacts and passes the list to `single_variable` in the environment dict. Based on the loop condition, this step will be invoked x-times:
 
 ```
          - name: CUSTOM_REPLACING_LOOP
