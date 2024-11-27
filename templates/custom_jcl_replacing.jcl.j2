@@ -1,0 +1,52 @@
+//CUSTJCL JOB 'WD-CJCL',MSGLEVEL=(1,1),MSGCLASS=R,NOTIFY=&SYSUID
+//*ROUTE PRINT @JCLPRINT@
+//*JOBLIB DD DISP=SHR,
+//* DSN=TODO.SDSNEXIT
+//* DD DISP=SHR,
+//* DSN=TODO.SDSNLOAD
+//*******************************************
+//*
+//* Notes:
+//*
+//* This Jinja2 templates iterate over the step.artifacts and allows
+//* to put together a custom JCL for the package contents, that are 
+//* referenced in this deployment step.
+//*
+//* This template is processed once for all associated types. It does
+//* not submit a JCL per member (the submit_job building block is not 
+//* artifact "sensitive")
+//*
+//* In this sample we are printing everything to the instream dd for
+//* IEFBR14
+//*
+//* Author DBEHM
+//*******************************************
+//* CUSTOMIZATION JOB
+//*******************************************
+//**BEGIN
+//JCLCUST EXEC PGM=IEFBR14,DYNAMNBR=20,COND=(4,LT)
+//SYSTSPRT DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSIN DD DUMMY
+//SYSIN DD *
+{# PRINT STEP ARTIFACT #}
+{% for artifact in step.artifacts -%}
+//{{ artifact['name'] }} DD *
+Element name: {{ artifact['name'] }}
+Element properties:
+  {% for prop in artifact['properties'] %}
+    {# Only get the path #}
+    {% if prop['key'] == 'path' %}
+   path: {{ prop['value'] }}
+    {% endif %}
+  {% endfor %}
+Element hash: {{ artifact['hash'] }}
+{# --- #}
+{# you can also define variables #}
+  {% set itemName = artifact['name'] %}
+{# --- #}
+end {{ itemName }} 
+//*
+{% endfor %}
+//*
