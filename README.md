@@ -11,11 +11,12 @@ Here is a sample activity configuration as a sample for your deployment method:
 ```yaml
   - name: CUST_JCL
     description: |
-      This will invoke the custom updates
+      This will invoke the custom updates of JCL
     actions:
-       - name: JCL
+       - name: JCL_SUBSTITUTION
          states:
             - UNDEFINED
+         steps:
          - name: CUSTOM_REPLACING_LOGIC
            description: |
              This step is using the job_submit building block to 
@@ -30,12 +31,12 @@ Here is a sample activity configuration as a sample for your deployment method:
            - key: template
              value: job_submit
            - key: var_job_submit
-             value: custom_jcl_replacing  
+             value: custom_jcl_replacing   
 ```
 
 Your environment file contains the configuration for the `job_submit` building block
 
-```
+```yaml
   custom_jcl_replacing:
    src: "/u/dbehm/wazi-deploy/cfg/templates/custom_jcl_replacing.jcl.j2"
    use_template: True
@@ -50,7 +51,15 @@ It leverages the [conditional keyword loop](https://www.ibm.com/docs/en/develope
 
 Here is a sample activity configuration as a sample for your deployment method. The `loop_query` selects the current_plan_step_artifacts and passes the list to `single_variable` in the environment dict. Based on the loop condition, this step will be invoked x-times:
 
-```
+```yaml
+  - name: CUST_JCL
+    description: |
+      This will invoke the custom updates of JCL
+    actions:
+       - name: JCL_SUBSTITUTION
+         states:
+            - UNDEFINED
+         steps:
          - name: CUSTOM_REPLACING_LOOP
            is_artifact: True
            types: 
@@ -69,7 +78,7 @@ Here is a sample activity configuration as a sample for your deployment method. 
 
 Your environment file contains the configuration for the `job_submit` building block. 
 
-```
+```yaml
   custom_jcl_replacing_loop:
    src: "/u/dbehm/wazi-deploy/cfg/templates/custom_jcl_replacing_loop.jcl.j2"
    use_template: True
@@ -86,7 +95,7 @@ Instead of repeating a similar block 10 or even more times, you can apply the fo
 The action is composed of 2 steps - reading a parameterized input configuration file; which is followed by the step using job_submit, combined with a loop on the level of the action.
 In the deployment method, we leverage the `loop_query` to iterate over all the deployTypes:
 
-```
+```yaml
   - name: GENERIC_JCL_PROCESSING
     description: |
       This will invoke the custom updates for multiple outputs
@@ -140,7 +149,7 @@ In the deployment method, we leverage the `loop_query` to iterate over all the d
 
 Your environment file contains the references to the parametrized yaml configuration.
 
-```
+```yaml
 include_generic_jcl_vars:
  files_list:
  - "{{ cfg }}/vars/generic_jcl_replacing.yaml"
@@ -151,7 +160,7 @@ The sample `generic_jcl_replacing.yaml` is loaded dynamically, and configures th
 
 It additionally show cases, how you can dynamically select additional configuration parameters for each iteration depending on the deploy type. In the below samples, there are srcPDS and targetPDS datasets configured for the generic jcl_replacing jinja2 template.
 
-```
+```yaml
   jcl_types:
    - type: "JCLM1"
      srcPDS: "{{ hlq }}.TEMP.JCLM1"
@@ -177,4 +186,4 @@ It additionally show cases, how you can dynamically select additional configurat
    targetPDS: "{{ jcl_types | selectattr( 'type', 'equalto', artifactType.name ) | map(attribute='targetPDS') | list | first }}"
 ```
 
-You find the template that references uses the 
+You find the template that references srcPDS and targetPDS in [templates/custom_jcl_replacing_generic.jcl.j2](templates/custom_jcl_replacing_generic.jcl.j2).
